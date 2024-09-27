@@ -8,13 +8,20 @@
 <body>
     <h1>Baixar Música do Suno</h1>
     
+    <!-- Input para URL da música -->
     <label for="songUrl">Insira a URL da música:</label><br>
     <input type="text" id="songUrl" placeholder="https://suno.com/song/{id}" style="width: 100%; padding: 8px;"><br><br>
+
+    <!-- Input para o nome da música -->
+    <label for="songName">Insira o nome da música:</label><br>
+    <input type="text" id="songName" placeholder="Nome do arquivo (sem extensão)" style="width: 100%; padding: 8px;"><br><br>
+
     <button onclick="downloadMusic()">Baixar Música</button>
 
     <script>
         async function downloadMusic() {
             const url = document.getElementById('songUrl').value;
+            const songName = document.getElementById('songName').value || 'suno_ai_music'; // Nome padrão se não for preenchido
 
             // Verifica se a URL é válida e contém o formato correto
             const regex = /https:\/\/suno\.com\/song\/([a-f0-9\-]{36})/;
@@ -40,7 +47,7 @@
                     // Cria um link para forçar o download
                     const a = document.createElement('a');
                     a.href = urlBlob;
-                    a.download = 'suno_ai_music.mp3';
+                    a.download = songName + '.mp3'; // Usa o nome da música inserido pelo usuário
                     
                     // Dispara o download
                     document.body.appendChild(a);
