@@ -13,7 +13,7 @@
     <button onclick="downloadMusic()">Baixar Música</button>
 
     <script>
-        function downloadMusic() {
+        async function downloadMusic() {
             const url = document.getElementById('songUrl').value;
 
             // Verifica se a URL é válida e contém o formato correto
@@ -24,17 +24,36 @@
                 const songId = match[1];
                 const downloadLink = `https://cdn1.suno.ai/${songId}.mp3`;
 
-                // Cria um link de download
-                const a = document.createElement('a');
-                a.href = downloadLink;
-                a.download = 'suno_ai_music.mp3';
-                
-                // Dispara o download
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                try {
+                    // Faz uma requisição para pegar o arquivo
+                    const response = await fetch(downloadLink);
+                    if (!response.ok) {
+                        throw new Error('Falha ao baixar o arquivo.');
+                    }
 
-                alert('Iniciando o download da música!');
+                    // Converte a resposta para Blob
+                    const blob = await response.blob();
+                    
+                    // Cria uma URL temporária para o Blob
+                    const urlBlob = window.URL.createObjectURL(blob);
+                    
+                    // Cria um link para forçar o download
+                    const a = document.createElement('a');
+                    a.href = urlBlob;
+                    a.download = 'suno_ai_music.mp3';
+                    
+                    // Dispara o download
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Remove o link da página e libera a URL temporária
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(urlBlob);
+
+                    alert('Download iniciado com sucesso!');
+                } catch (error) {
+                    alert('Erro ao baixar a música: ' + error.message);
+                }
             } else {
                 alert('URL inválida. Por favor, insira uma URL válida da Suno.');
             }
