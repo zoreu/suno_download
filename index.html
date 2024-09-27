@@ -3,83 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Música Suno com Capa Automática</title>
+    <title>Download Música Suno</title>
 </head>
 <body>
-    <h1>Baixar Música do Suno com Capa Automática</h1>
+    <h1>Baixar Música do Suno</h1>
     
     <label for="songUrl">Insira a URL da música:</label><br>
     <input type="text" id="songUrl" placeholder="https://suno.com/song/{id}" style="width: 100%; padding: 8px;"><br><br>
-    <button onclick="downloadMusicWithCover()">Baixar Música</button>
-
-    <script src="https://cdn.jsdelivr.net/npm/id3-writer"></script>
+    <button onclick="downloadMusic()">Baixar Música</button>
 
     <script>
-        async function downloadMusicWithCover() {
-            const songUrl = document.getElementById('songUrl').value;
+        async function downloadMusic() {
+            const url = document.getElementById('songUrl').value;
 
-            // Regex para capturar o ID da música
+            // Verifica se a URL é válida e contém o formato correto
             const regex = /https:\/\/suno\.com\/song\/([a-f0-9\-]{36})/;
-            const match = songUrl.match(regex);
+            const match = url.match(regex);
             
             if (match && match[1]) {
                 const songId = match[1];
-                
-                // Gera automaticamente a URL de download da música e da capa
                 const downloadLink = `https://cdn1.suno.ai/${songId}.mp3`;
-                const coverLink = `https://cdn2.suno.ai/image_${songId}.jpeg`;
 
                 try {
-                    // Faz o download do arquivo MP3
+                    // Faz uma requisição para pegar o arquivo
                     const response = await fetch(downloadLink);
                     if (!response.ok) {
                         throw new Error('Falha ao baixar o arquivo.');
                     }
-                    const songBlob = await response.blob();
-                    const songArrayBuffer = await songBlob.arrayBuffer();
+
+                    // Converte a resposta para Blob
+                    const blob = await response.blob();
                     
-                    // Inicia a biblioteca ID3 Writer
-                    const writer = new ID3Writer(new Uint8Array(songArrayBuffer));
-
-                    // Faz o download da capa automaticamente gerada
-                    const coverResponse = await fetch(coverLink);
-                    if (!coverResponse.ok) {
-                        throw new Error('Falha ao baixar a imagem da capa.');
-                    }
-                    const coverBlob = await coverResponse.blob();
-                    const coverArrayBuffer = await coverBlob.arrayBuffer();
-
-                    // Adiciona a capa e outros metadados
-                    writer.setFrame('APIC', {
-                        type: 3, // Imagem de capa frontal
-                        data: new Uint8Array(coverArrayBuffer),
-                        description: 'Cover',
-                        mime: coverBlob.type // Exemplo: 'image/jpeg'
-                    });
-
-                    // Define metadados adicionais (opcional)
-                    writer.setFrame('TIT2', 'Música Suno AI')
-                          .setFrame('TPE1', ['Suno AI'])
-                          .setFrame('TALB', 'Suno Music')
-                          .setFrame('TYER', 2024);
-
-                    writer.addTag();
-
-                    // Converte de volta para Blob e faz o download do arquivo
-                    const taggedSongBlob = writer.getBlob();
-                    const urlBlob = window.URL.createObjectURL(taggedSongBlob);
+                    // Cria uma URL temporária para o Blob
+                    const urlBlob = window.URL.createObjectURL(blob);
                     
+                    // Cria um link para forçar o download
                     const a = document.createElement('a');
                     a.href = urlBlob;
-                    a.download = 'suno_ai_music_with_cover.mp3';
+                    a.download = 'suno_ai_music.mp3';
+                    
+                    // Dispara o download
                     document.body.appendChild(a);
                     a.click();
+                    
+                    // Remove o link da página e libera a URL temporária
                     document.body.removeChild(a);
-
-                    // Libera a URL temporária
                     window.URL.revokeObjectURL(urlBlob);
 
-                    alert('Música com capa baixada com sucesso!');
+                    alert('Download iniciado com sucesso!');
                 } catch (error) {
                     alert('Erro ao baixar a música: ' + error.message);
                 }
